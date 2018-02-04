@@ -1,7 +1,6 @@
 package io.github.moesama.moecomponent.library
 
 import android.app.Activity
-import android.content.Context
 import android.os.Handler
 import android.view.View
 
@@ -37,7 +36,7 @@ open class Component(private val activity: Activity) {
                 return it.components[clazz.name] as T
             } else {
                 try {
-                    val t = clazz.getConstructor(Context::class.java).newInstance(activity)
+                    val t = clazz.getConstructor(Activity::class.java).newInstance(activity)
                     it.components[clazz.name] = t
                     t.baseComponent = it
                     if (it.isAlive) {
