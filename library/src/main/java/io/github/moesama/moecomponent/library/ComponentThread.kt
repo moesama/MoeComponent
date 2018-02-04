@@ -1,10 +1,11 @@
 package io.github.moesama.moecomponent.library
 
 import android.app.Activity
+import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
-import android.os.SystemClock
 import android.view.ViewGroup
+import java.util.*
 
 /**
  * Created by SuperVC on 2018/2/4.
@@ -21,14 +22,31 @@ class ComponentThread(activity: Activity) : HandlerThread("component") {
 
         fun destroy(activity: Activity) {
             val componentThread = activity.getComponentThread()
-            componentThread?.quitSafely()
+            componentThread?.let {
+                it.quitSafely()
+                it.onDestroy()
+            }
             activity.clearComponentThread()
         }
     }
 
     private val content: ViewGroup = activity.findViewById(android.R.id.content)
-    private var lastTime = SystemClock.currentThreadTimeMillis()
-    private val delta = 1000 / FPS
+    private val delta = 1000L / FPS
+
+    private lateinit var handler: Handler
+
+    private val timer = Timer()
+    private val task: TimerTask = object : TimerTask() {
+        override fun run() {
+            handler.post {
+                content.getChildAt(0)?.getBaseComponent()?.let {
+                    if (it.isAlive) {
+                        it.onUpdate()
+                    }
+                }
+            }
+        }
+    }
 
     init {
         content.setTag(R.id.tag_component_thread, this)
@@ -36,16 +54,12 @@ class ComponentThread(activity: Activity) : HandlerThread("component") {
 
     override fun onLooperPrepared() {
         super.onLooperPrepared()
-        val d = SystemClock.currentThreadTimeMillis() - lastTime
-        if (d < delta) {
-            Thread.sleep(delta - d)
-        }
-        content.getChildAt(0)?.getBaseComponent()?.let {
-            if (it.isAlive) {
-                it.onUpdate()
-            }
-        }
-        lastTime = SystemClock.currentThreadTimeMillis()
+        handler = Handler(looper)
+        timer.schedule(task, 0L, delta)
+    }
+
+    fun onDestroy() {
+        timer.cancel()
     }
 }
 
