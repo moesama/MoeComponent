@@ -1,5 +1,6 @@
 package io.github.moesama.moecomponent.library
 
+import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import java.util.concurrent.ConcurrentHashMap
@@ -7,11 +8,11 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Created by SuperVC on 2018/2/2.
  */
-class BaseComponent(val view: View) : Component(view.context), View.OnAttachStateChangeListener {
+class BaseComponent(val view: View) : Component(view.context as Activity), View.OnAttachStateChangeListener {
     companion object {
         fun obtain(view: View): BaseComponent? {
             var baseComponent = view.getTag(R.id.tag_base_component) as BaseComponent?
-            if (baseComponent == null && view.context is ComponentActivity) {
+            if (baseComponent == null && view.context is Activity) {
                 baseComponent = BaseComponent(view)
                 view.setTag(R.id.tag_base_component, baseComponent)
             }

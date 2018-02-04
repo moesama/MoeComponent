@@ -1,5 +1,6 @@
 package io.github.moesama.moecomponent.library
 
+import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.view.View
@@ -8,10 +9,10 @@ import android.view.View
  * Created by SuperVC on 2018/2/2.
  */
 @Suppress("UNCHECKED_CAST")
-open class Component(private val context: Context) {
+open class Component(private val activity: Activity) {
 
-    private val handler: Handler = Handler(context.mainLooper)
-    private val componentHandler: Handler = Handler((context as ComponentActivity).componentLooper)
+    private val handler: Handler = Handler(activity.mainLooper)
+    private val componentHandler: Handler = Handler(activity.getComponentLooper())
     protected var baseComponent: BaseComponent? = null
 
     @get:Synchronized
@@ -36,7 +37,7 @@ open class Component(private val context: Context) {
                 return it.components[clazz.name] as T
             } else {
                 try {
-                    val t = clazz.getConstructor(Context::class.java).newInstance(context)
+                    val t = clazz.getConstructor(Context::class.java).newInstance(activity)
                     it.components[clazz.name] = t
                     t.baseComponent = it
                     if (it.isAlive) {
